@@ -1,16 +1,13 @@
 import time
-import math
+from servidor.funcoes_do_servidor import _verificando_conexao
+from servidor.funcoes_do_servidor import _ativar
+from servidor.funcoes_do_servidor import _consultar
+
 
 def conectando(nome):
     print("conectando ...")
     time.sleep(3)
-    print(
-        "\033[32m"
-        + "\nOlá "
-        + nome
-        + ", você está conectado ao servidor!\n"
-        + "\033[0;0m"
-    )
+    print(_verificando_conexao(nome))
     print("carregando ...")
     time.sleep(3)
 
@@ -24,39 +21,11 @@ def menu():
     print("Depois tecle Enter.")
 
 
-def _ativar(placa):
-    f = open("placas_ativadas.txt", "a")
-    ts = int(float(time.time()))
-    f.write("{} {}\n".format(placa, ts))
-    f.close()
-
-
 def ativar():
     print("-" * 20)
     print("ATIVAR PLACA")
     placa = input("Digite a placa:")
     _ativar(placa)
-
-
-def _consultar(placa):
-    placas = {}
-    with open("placas_ativadas.txt", "r") as arquivo:
-        linhas = arquivo.read().split("\n")
-    for linha in linhas:
-        if linha:
-            plc = linha.split(" ")[0]
-            timestamp = linha.split(" ")[1]
-            placas[plc] = int(float(timestamp))
-
-    if not placas[placa]:
-        return (placa, False, None)
-
-    tempo = math.floor((time.time() - placas[placa]) / 60)
-
-    if tempo > 60:
-        return (placa, False, tempo - 60)
-
-    return (placa, True, 60 - tempo)
 
 
 def consultar():
