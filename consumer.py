@@ -1,6 +1,34 @@
+import pika
 import time
 import math
 
+def on_message_received(ch, method, properties, body):
+    print(f"received new message: {body}")
+    print("-" * 20)
+    print("Bem vindo ao sistema de estacionamento rotativo!")
+    nome = input("Digite seu nome, e tecle enter:")
+    conectando(nome)
+
+    while True:
+        menu()
+        opcao = input()
+
+        if opcao == "1":
+            ativar()
+            if outra_operacao():
+                continue
+            break
+        elif opcao == "2":
+            consultar()
+            if outra_operacao():
+                continue
+            break
+        elif opcao == "3":
+            print("\033[32m" + "\nTchau!\n" + "\033[0;0m")
+            break
+        else:
+            print("\033[31m" + "\nOpção inválida.\n" + "\033[0;0m")
+            continue
 def conectando(nome):
     print("conectando ...")
     time.sleep(3)
@@ -89,28 +117,19 @@ def outra_operacao():
     return not resposta == "n"
 
 
-print("-" * 20)
-print("Bem vindo ao sistema de estacionamento rotativo!")
-nome = input("Digite seu nome, e tecle enter:")
-conectando(nome)
+connection_parameters = pika.ConnectionParameters('localhost')
+connection = pika.BlockingConnection(connection_parameters)
+channel = connection.channel()
+channel.queue_declare(queue = 'letterbox')
+channel.basic_consume(queue='letterbox', auto_ack=True, on_message_callback=on_message_received)
 
-while True:
-    menu()
-    opcao = input()
+print("Start Consuming")
 
-    if opcao == "1":
-        ativar()
-        if outra_operacao():
-            continue
-        break
-    elif opcao == "2":
-        consultar()
-        if outra_operacao():
-            continue
-        break
-    elif opcao == "3":
-        print("\033[32m" + "\nTchal!\n" + "\033[0;0m")
-        break
-    else:
-        print("\033[31m" + "\nOpção inválida.\n" + "\033[0;0m")
-        continue
+channel.start_consuming()
+
+
+
+
+
+
+
