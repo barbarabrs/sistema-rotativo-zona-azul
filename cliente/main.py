@@ -1,6 +1,8 @@
 import time
+import pika
 from servidor.funcoes_do_servidor import _verificando_conexao
-from servidor.funcoes_do_servidor import _ativar
+
+# from servidor.funcoes_do_servidor import _ativar
 from servidor.funcoes_do_servidor import _consultar
 
 
@@ -19,6 +21,25 @@ def menu():
     print("Digite 2 para consultar uma placa.")
     print("Digite 3 para sair do programa.")
     print("Depois tecle Enter.")
+
+
+def _ativar(placa):
+    try:
+        connection = pika.BlockingConnection(
+            pika.ConnectionParameters(host="localhost")
+        )
+        channel = connection.channel()
+        channel.queue_declare(queue="ativacao", durable=True)
+        channel.basic_publish(
+            exchange="",
+            routing_key="ativacao",
+            body=placa,
+            properties=pika.BasicProperties(delivery_mode=pika.DeliveryMode.Persistent),
+        )
+        print(f" Placa {placa} está sendo ativada.")
+        connection.close()
+    except:
+        print("Não foi possível conectar, tente mais tarde.")
 
 
 def ativar():
@@ -58,10 +79,10 @@ def outra_operacao():
     return not resposta == "n"
 
 
-print("-" * 20)
-print("Bem vindo ao sistema de estacionamento rotativo!")
-nome = input("Digite seu nome, e tecle enter:")
-conectando(nome)
+# print("-" * 20)
+# print("Bem vindo ao sistema de estacionamento rotativo!")
+# nome = input("Digite seu nome, e tecle enter:")
+# conectando(nome)
 
 while True:
     menu()
