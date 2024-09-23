@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import pika
+import time
 
 connection = pika.BlockingConnection(
     pika.ConnectionParameters(host="localhost"),
@@ -7,6 +8,8 @@ connection = pika.BlockingConnection(
 channel = connection.channel()
 
 channel.queue_declare(queue="rpc_queue")
+channel.queue_declare(queue="text_queue")
+channel.queue_declare(queue="salvar_queue")
 
 
 def fib(n):
@@ -32,10 +35,40 @@ def on_request(ch, method, props, body):
         body=str(response),
     )
     ch.basic_ack(delivery_tag=method.delivery_tag)
+    
+def on_request2(ch, method, props, body):
+    texto = body.decode()       
+    concat = "Hello " + texto + "!"
+   
 
+    ch.basic_publish(
+        exchange="",
+        routing_key=props.reply_to,
+        properties=pika.BasicProperties(correlation_id=props.correlation_id),
+        body=str(concat),
+    )
+    ch.basic_ack(delivery_tag=method.delivery_tag)
+    
+
+def ativar(placa):
+    f = open("placas_ativadas.txt", "a")
+    ts = int(float(time.time()))
+    f.write("{} \n".format(placa))
+    f.close()
+    
+def on_request3(ch, method, props, body):
+    print("chegou")
+    texto = body.decode()       
+    ativar(texto)
+    print("Salvo no arquivo placas_ativadas.txt")
+   
+
+    ch.basic_ack(delivery_tag=method.delivery_tag)
 
 channel.basic_qos(prefetch_count=1)
 channel.basic_consume(queue="rpc_queue", on_message_callback=on_request)
+channel.basic_consume(queue="text_queue", on_message_callback=on_request2)
+channel.basic_consume(queue="salvar_queue", on_message_callback=on_request3)
 
 print(" [x] Awaiting RPC requests")
 channel.start_consuming()
