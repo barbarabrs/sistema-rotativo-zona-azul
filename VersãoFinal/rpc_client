@@ -47,6 +47,5 @@ fibonacci_rpc = FibonacciRpcClient()
 
 print("Digite um número:")
 numero = input()
-print(f" [x] Requesting fib({numero})")
 response = fibonacci_rpc.call(numero)
-print(f" [.] Got {response}")
+print(f" [.] A resposta é {response}")

@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 import pika
-import time
 
 connection = pika.BlockingConnection(
     pika.ConnectionParameters(host="localhost"),
@@ -50,17 +49,16 @@ def on_request2(ch, method, props, body):
     ch.basic_ack(delivery_tag=method.delivery_tag)
     
 
-def ativar(placa):
-    f = open("placas_ativadas.txt", "a")
-    ts = int(float(time.time()))
-    f.write("{} \n".format(placa))
+def ativar(texto):
+    f = open("arquivo.txt", "a")
+    f.write("{} \n".format(texto))
     f.close()
     
 def on_request3(ch, method, props, body):
-    print("chegou")
+    print("chegou a requisição.")
     texto = body.decode()       
     ativar(texto)
-    print("Salvo no arquivo placas_ativadas.txt")
+    print("Salvo no arquivo.")
    
 
     ch.basic_ack(delivery_tag=method.delivery_tag)
@@ -70,5 +68,5 @@ channel.basic_consume(queue="rpc_queue", on_message_callback=on_request)
 channel.basic_consume(queue="text_queue", on_message_callback=on_request2)
 channel.basic_consume(queue="salvar_queue", on_message_callback=on_request3)
 
-print(" [x] Awaiting RPC requests")
+print(" [x] Awaiting requests")
 channel.start_consuming()
